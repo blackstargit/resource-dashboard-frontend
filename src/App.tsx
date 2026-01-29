@@ -137,10 +137,12 @@ function App() {
 
             <div className="flex flex-col">
               <h1 className="text-4xl font-bold tracking-tight leading-none mb-2">
-                <span className="text-gradient-primary drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]">
+                <span className="text-gradient-primary drop-shadow-[0_0_15px_rgba(0,240,255,0.4)] text-6xl">
                   NARRATIVE
                 </span>
-                <span className="text-gradient-secondary ml-2">MONITOR</span>
+                <span className="text-gradient-secondary ml-2 text-6xl">
+                  MONITOR
+                </span>
               </h1>
               <div className="flex items-center gap-4 text-xs font-mono text-gray-400 uppercase tracking-widest pl-1">
                 <span className="text-[var(--primary)]">
