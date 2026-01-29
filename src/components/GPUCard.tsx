@@ -89,7 +89,7 @@ export const GPUCard: React.FC<GPUCardProps> = ({ gpu }) => {
             <span
               className={`font-mono font-bold ${isHighTemp ? "text-[var(--tertiary-1)]" : "text-gray-200"}`}
             >
-              {gpu.temp_celsius}°C
+              {gpu.temp_celsius > 0 ? `${gpu.temp_celsius}°C` : "N/A"}
             </span>
           </div>
         </div>
