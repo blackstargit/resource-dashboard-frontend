@@ -18,44 +18,49 @@ export const GPUCard: React.FC<GPUCardProps> = ({ gpu }) => {
       : "var(--primary)";
 
   return (
-    <div className="glass-card p-5 relative overflow-hidden">
+    <div className="glass-card p-6 relative overflow-hidden flex flex-col justify-between h-full">
       {/* Side Color Strip */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 transition-colors duration-300"
+        className="absolute left-0 top-0 bottom-0 w-1.5 transition-colors duration-300"
         style={{ background: statusColor }}
       />
 
-      <div className="flex justify-between items-center mb-3 pl-2">
-        <h3 className="font-bold text-lg truncate pr-2" title={gpu.name}>
-          GPU {gpu.gpu_id}
-          <span className="text-xs font-normal text-gray-400 ml-2 block truncate">
+      <div className="flex justify-between items-start mb-5 pl-4">
+        <div className="overflow-hidden pr-3">
+          <h3 className="font-bold text-xl truncate" title={gpu.name}>
+            GPU {gpu.gpu_id}
+          </h3>
+          <span className="text-xs font-medium text-gray-400 block truncate mt-1 tracking-wide uppercase opacity-70">
             {gpu.name}
           </span>
-        </h3>
+        </div>
         <span
-          className="text-2xl font-mono font-bold"
-          style={{ color: statusColor }}
+          className="text-3xl font-mono font-bold tracking-tight"
+          style={{
+            color: statusColor,
+            textShadow: `0 0 10px ${statusColor}40`,
+          }}
         >
           {Math.round(gpu.load_percent)}%
         </span>
       </div>
 
       {/* Grid for details */}
-      <div className="grid grid-cols-2 gap-3 pl-2">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 pl-4 text-sm mt-auto">
         {/* VRAM */}
-        <div className="col-span-2 space-y-1">
-          <div className="flex justify-between text-xs text-gray-400">
-            <span className="flex items-center gap-1">
-              <Database size={12} /> VRAM
+        <div className="col-span-2 space-y-2">
+          <div className="flex justify-between text-xs font-semibold text-gray-400 uppercase tracking-widest">
+            <span className="flex items-center gap-2">
+              <Database size={14} /> VRAM
             </span>
-            <span>
+            <span className="font-mono text-white/80">
               {gpu.memory_used_gb.toFixed(1)} / {gpu.memory_total_gb.toFixed(1)}{" "}
               GB
             </span>
           </div>
-          <div className="w-full bg-gray-800/50 rounded-full h-1.5 overflow-hidden">
+          <div className="w-full bg-gray-800/50 rounded-full h-2 overflow-hidden border border-white/5">
             <div
-              className="h-full rounded-full transition-all duration-300"
+              className="h-full rounded-full transition-all duration-300 relative"
               style={{
                 width: `${gpu.memory_percent}%`,
                 background:
@@ -63,29 +68,43 @@ export const GPUCard: React.FC<GPUCardProps> = ({ gpu }) => {
                     ? "var(--tertiary-1)"
                     : "var(--tertiary-2)",
               }}
-            />
+            >
+              <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/30 blur-[1px]" />
+            </div>
           </div>
         </div>
 
         {/* Temp */}
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-3 mt-2 bg-white/5 p-2 rounded-lg border border-white/5">
           <Thermometer
-            size={14}
+            size={16}
             className={
               isHighTemp ? "text-[var(--tertiary-1)]" : "text-gray-400"
             }
           />
-          <span
-            className={`font-mono text-sm ${isHighTemp ? "text-[var(--tertiary-1)]" : "text-gray-300"}`}
-          >
-            {gpu.temp_celsius}°C
-          </span>
+          <div className="flex flex-col">
+            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">
+              Temp
+            </span>
+            <span
+              className={`font-mono font-bold ${isHighTemp ? "text-[var(--tertiary-1)]" : "text-gray-200"}`}
+            >
+              {gpu.temp_celsius}°C
+            </span>
+          </div>
         </div>
 
         {/* Load Icon visual */}
-        <div className="flex items-center gap-2 mt-1 justify-end">
-          <Cpu size={14} className="text-gray-400" />
-          <span className="text-xs text-gray-400">Idx: {gpu.gpu_id}</span>
+        <div className="flex items-center gap-3 mt-2 justify-end bg-white/5 p-2 rounded-lg border border-white/5">
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">
+              Index
+            </span>
+            <span className="text-gray-300 font-mono font-bold">
+              #{gpu.gpu_id}
+            </span>
+          </div>
+          <Cpu size={16} className="text-gray-400" />
         </div>
       </div>
     </div>

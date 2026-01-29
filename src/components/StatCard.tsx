@@ -23,38 +23,40 @@ export const StatCard: React.FC<StatCardProps> = ({
   const getColorVar = () => `var(--${color})`;
 
   return (
-    <div className="glass-card p-6 flex flex-col justify-between h-full relative group">
+    <div className="glass-card p-8 flex flex-col justify-between h-full relative group">
       {/* Background Glow Effect */}
       <div
         className="absolute top-0 right-0 w-32 h-32 opacity-10 rounded-full blur-2xl transition-opacity group-hover:opacity-20 pointer-events-none"
         style={{ background: getColorVar() }}
       />
 
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-start mb-6">
         <div>
-          <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+          <h3 className="text-base font-medium text-gray-400 uppercase tracking-widest">
             {title}
           </h3>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-bold font-mono tracking-tight">
+          <div className="mt-4 flex items-baseline gap-3">
+            <span className="text-4xl font-bold font-mono tracking-tight text-shadow-glow">
               {value}
             </span>
             {subtitle && (
-              <span className="text-sm text-gray-500">{subtitle}</span>
+              <span className="text-sm font-medium text-gray-500">
+                {subtitle}
+              </span>
             )}
           </div>
         </div>
         <div
-          className="p-3 rounded-xl bg-opacity-10 backdrop-blur-md border border-white/5"
+          className="p-4 rounded-2xl bg-opacity-10 backdrop-blur-md border border-white/5 shadow-inner"
           style={{ backgroundColor: `${getColorVar()}15` }} // 15 = hex opacity ~8%
         >
-          <Icon size={24} style={{ color: getColorVar() }} />
+          <Icon size={28} style={{ color: getColorVar() }} />
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {percent !== undefined && (
-          <div className="w-full bg-gray-800/50 rounded-full h-2 overflow-hidden border border-white/5">
+          <div className="w-full bg-gray-800/50 rounded-full h-3 overflow-hidden border border-white/5">
             <div
               className="h-full rounded-full transition-all duration-500 ease-out relative"
               style={{
@@ -68,7 +70,7 @@ export const StatCard: React.FC<StatCardProps> = ({
         )}
 
         {trend && (
-          <p className="text-xs text-right mt-1 font-mono opacity-70">
+          <p className="text-xs text-right mt-2 font-mono opacity-70 tracking-wide">
             {trend}
           </p>
         )}
