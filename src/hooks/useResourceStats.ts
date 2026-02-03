@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { SystemStats } from "../types";
 
-const API_URL = "http://localhost:8002/api/v1/resources/stats/stream";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8002/api/v1/resources/stats/stream";
 
 export function useResourceStats(historyLength = 60) {
   const [stats, setStats] = useState<SystemStats | null>(null);
