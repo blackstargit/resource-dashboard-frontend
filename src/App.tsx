@@ -62,7 +62,7 @@ function App() {
             <p className="opacity-80 font-mono text-sm">{error}</p>
           </div>
           <div className="text-xs text-gray-400 bg-black/20 p-3 rounded border border-white/5 font-mono">
-            &gt; CHECK_PORT: 8002
+            &gt; CHECK_PORT: 8202
             <br />
             &gt; STATUS: OFFLINE
           </div>
