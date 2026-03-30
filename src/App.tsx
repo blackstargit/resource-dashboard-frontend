@@ -138,32 +138,20 @@ function App() {
             <div className="flex flex-col">
               <h1 className="text-4xl font-bold tracking-tight leading-none mb-2">
                 <span className="text-gradient-primary drop-shadow-[0_0_15px_rgba(0,240,255,0.4)] text-6xl">
-                  NARRATIVE
+                  RESOURCE
                 </span>
                 <span className="text-gradient-secondary ml-2 text-6xl">
                   MONITOR
                 </span>
               </h1>
               <div className="flex items-center gap-4 text-xs font-mono text-gray-400 uppercase tracking-widest pl-1">
-                <span className="text-[var(--primary)]">
-                  &gt; Resource Orchestrator
-                </span>
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--tertiary-1)]"></span>
-                <span>v1.0.0</span>
+                <span>v1.1.0</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-8">
-            <div className="hidden md:flex items-center gap-8 mr-4">
-              <div className="flex flex-col items-end">
-                <span className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mb-1">
-                  System Uptime
-                </span>
-                <span className="font-mono text-sm">09:26:38</span>
-              </div>
-            </div>
-
             <div className="pl-6 border-l border-white/10 flex flex-col items-end min-w-[120px]">
               <span
                 className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 mb-1 ${isConnected ? "text-[var(--tertiary-2)]" : "text-[var(--tertiary-1)]"}`}
