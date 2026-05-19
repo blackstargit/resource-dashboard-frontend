@@ -1,6 +1,7 @@
 import { useResourceStats } from "./hooks/useResourceStats";
 import { StatCard } from "./components/StatCard";
 import { GPUCard } from "./components/GPUCard";
+import { ProcessTable } from "./components/ProcessTable";
 import {
   Cpu,
   MemoryStick as Memory,
@@ -380,6 +381,11 @@ function App() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Top Processes Section */}
+        <div className="col-span-12 mt-2">
+          <ProcessTable />
         </div>
       </main>
     </div>

@@ -50,3 +50,23 @@ export interface SystemStats {
   process: ProcessStats;
   timestamp: number;
 }
+
+export interface TopProcess {
+  pid: number;
+  name: string;
+  cpu_percent: number;
+  memory_mb: number;
+  memory_percent: number;
+  gpu_memory_mb: number | null;
+  gpu_id: number | null;
+}
+
+export interface ProcessListResponse {
+  processes: TopProcess[];
+  total_shown: number;
+  sort_by: string;
+  gpu_available: boolean;
+  timestamp: number;
+}
+
+export type ProcessSortKey = "cpu" | "memory" | "gpu_memory";
