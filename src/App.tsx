@@ -301,10 +301,7 @@ function App() {
                     }}
                     itemStyle={{ padding: "2px 0" }}
                     labelStyle={{ display: "none" }}
-                    formatter={(
-                      value: number | string | undefined,
-                      name: string | undefined,
-                    ) => [
+                    formatter={(value, name) => [
                       `${Number(value ?? 0).toFixed(1)}%`,
                       <span
                         style={{
