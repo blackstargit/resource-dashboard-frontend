@@ -2,6 +2,7 @@ import { useResourceStats } from "./hooks/useResourceStats";
 import { StatCard } from "./components/StatCard";
 import { GPUCard } from "./components/GPUCard";
 import { ProcessTable } from "./components/ProcessTable";
+import { CoreGrid } from "./components/CoreGrid";
 import {
   Cpu,
   MemoryStick as Memory,
@@ -10,6 +11,8 @@ import {
   Server,
   Zap,
   AlertCircle,
+  BatteryFull,
+  BatteryCharging,
 } from "lucide-react";
 import {
   AreaChart,
@@ -28,6 +31,15 @@ const Scanlines = () => (
     style={{ backgroundSize: "100% 2px, 3px 100%" }}
   />
 );
+
+function formatUptime(seconds: number): string {
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor((seconds % 86400) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
 
 const BackgroundGrid = () => (
   <div
@@ -153,6 +165,31 @@ function App() {
           </div>
 
           <div className="flex items-center gap-8">
+            {stats.system.battery_percent !== null && (
+              <div className="pl-6 border-l border-white/10 flex flex-col items-end min-w-[80px]">
+                <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 mb-1 text-gray-400">
+                  {stats.system.battery_plugged ? (
+                    <BatteryCharging size={12} className="text-[var(--tertiary-2)]" />
+                  ) : (
+                    <BatteryFull size={12} />
+                  )}
+                  Battery
+                </span>
+                <span className="text-xs text-gray-300 font-mono">
+                  {stats.system.battery_percent.toFixed(0)}%
+                </span>
+              </div>
+            )}
+
+            <div className="pl-6 border-l border-white/10 flex flex-col items-end min-w-[80px]">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
+                Uptime
+              </span>
+              <span className="text-xs text-gray-300 font-mono">
+                {formatUptime(stats.system.uptime_seconds)}
+              </span>
+            </div>
+
             <div className="pl-6 border-l border-white/10 flex flex-col items-end min-w-[120px]">
               <span
                 className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 mb-1 ${isConnected ? "text-[var(--tertiary-2)]" : "text-[var(--tertiary-1)]"}`}
@@ -205,6 +242,11 @@ function App() {
             percent={stats.disk.percent}
             color="tertiary-1"
           />
+        </div>
+
+        {/* Per-Core CPU Load */}
+        <div className="col-span-12 mb-8">
+          <CoreGrid cores={stats.cpu.per_core_percent} />
         </div>
 
         {/* GPU Grid Section */}

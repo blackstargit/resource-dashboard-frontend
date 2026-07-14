@@ -45,5 +45,17 @@ export function useProcessList(
     };
   }, [fetchProcesses, intervalMs]);
 
-  return { data, isLoading, error };
+  const killProcess = useCallback(
+    async (pid: number) => {
+      const res = await fetch(`${BASE_URL}/processes/${pid}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.detail || `HTTP ${res.status}`);
+      }
+      await fetchProcesses();
+    },
+    [fetchProcesses]
+  );
+
+  return { data, isLoading, error, killProcess };
 }

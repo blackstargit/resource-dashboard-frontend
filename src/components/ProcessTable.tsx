@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { List } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { List, Search, X } from "lucide-react";
 import { useProcessList } from "../hooks/useProcessList";
+import { cpuColor } from "../lib/colors";
 import type { ProcessSortKey } from "../types";
 
 interface TabDef {
@@ -15,13 +16,6 @@ const TABS: TabDef[] = [
   { key: "gpu_memory", label: "GPU",    color: "var(--tertiary-2)" },
 ];
 
-function cpuColor(pct: number): string {
-  if (pct > 85) return "var(--tertiary-1)";
-  if (pct > 60) return "var(--secondary)";
-  if (pct > 20) return "var(--primary)";
-  return "rgba(255,255,255,0.35)";
-}
-
 function memColor(pct: number): string {
   if (pct > 85) return "var(--tertiary-1)";
   if (pct > 60) return "var(--secondary)";
@@ -35,14 +29,39 @@ interface ProcessTableProps {
 
 export const ProcessTable: React.FC<ProcessTableProps> = ({ className }) => {
   const [sortBy, setSortBy] = useState<ProcessSortKey>("cpu");
-  const { data, isLoading, error } = useProcessList(sortBy, 25, 2000);
+  const [search, setSearch] = useState("");
+  const [killingPid, setKillingPid] = useState<number | null>(null);
+  const [killError, setKillError] = useState<string | null>(null);
+  const { data, isLoading, error, killProcess } = useProcessList(sortBy, 25, 2000);
 
   const showGpu = data?.gpu_available === true;
+
+  const filteredProcesses = useMemo(() => {
+    if (!data) return [];
+    const q = search.trim().toLowerCase();
+    if (!q) return data.processes;
+    return data.processes.filter(
+      (p) => p.name.toLowerCase().includes(q) || String(p.pid).includes(q)
+    );
+  }, [data, search]);
+
+  const handleKill = async (pid: number, name: string) => {
+    if (!window.confirm(`Terminate "${name}" (PID ${pid})?`)) return;
+    setKillingPid(pid);
+    setKillError(null);
+    try {
+      await killProcess(pid);
+    } catch (e) {
+      setKillError(e instanceof Error ? e.message : "Failed to terminate process");
+    } finally {
+      setKillingPid(null);
+    }
+  };
 
   return (
     <div className={`glass-card overflow-hidden ${className ?? ""}`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-5 pb-3">
         <div className="flex items-center gap-2">
           <List size={16} style={{ color: "var(--primary)" }} />
           <span className="text-sm font-bold uppercase tracking-widest" style={{ color: "var(--primary)" }}>
@@ -50,33 +69,56 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ className }) => {
           </span>
           {data && (
             <span className="text-xs font-mono px-2 py-0.5 rounded-full border border-white/10 text-white/40 ml-1">
-              {data.total_shown}
+              {filteredProcesses.length}
             </span>
           )}
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-1">
-          {TABS.map((tab) => {
-            const active = sortBy === tab.key;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setSortBy(tab.key)}
-                className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded transition-all duration-200"
-                style={{
-                  color: active ? tab.color : "rgba(255,255,255,0.3)",
-                  background: active ? `${tab.color}15` : "transparent",
-                  borderBottom: active ? `2px solid ${tab.color}` : "2px solid transparent",
-                  boxShadow: active ? `0 0 8px ${tab.color}30` : "none",
-                }}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <div className="relative">
+            <Search
+              size={14}
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/25 pointer-events-none"
+            />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Filter by name or PID..."
+              className="text-xs font-mono pl-8 pr-3 py-1.5 rounded bg-white/5 border border-white/10 text-white/80 placeholder:text-white/25 focus:outline-none focus:border-white/25 w-48"
+            />
+          </div>
+
+          {/* Sort tabs */}
+          <div className="flex gap-1">
+            {TABS.map((tab) => {
+              const active = sortBy === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setSortBy(tab.key)}
+                  className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded transition-all duration-200"
+                  style={{
+                    color: active ? tab.color : "rgba(255,255,255,0.3)",
+                    background: active ? `${tab.color}15` : "transparent",
+                    borderBottom: active ? `2px solid ${tab.color}` : "2px solid transparent",
+                    boxShadow: active ? `0 0 8px ${tab.color}30` : "none",
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
+
+      {killError && (
+        <div className="mx-5 mb-3 px-3 py-2 rounded text-xs font-mono" style={{ color: "var(--tertiary-1)", background: "rgba(255,0,85,0.08)", border: "1px solid rgba(255,0,85,0.2)" }}>
+          {killError}
+        </div>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -103,9 +145,12 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ className }) => {
                     GPU Mem
                   </th>
                 )}
+                <th className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-right w-16 text-white/25">
+                  Kill
+                </th>
               </tr>
               <tr>
-                <td colSpan={showGpu ? 6 : 5} className="p-0">
+                <td colSpan={showGpu ? 7 : 6} className="p-0">
                   <div className="h-px w-full" style={{ background: "rgba(255,255,255,0.06)" }} />
                 </td>
               </tr>
@@ -134,22 +179,25 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ className }) => {
                         <div className="h-3.5 w-14 rounded ml-auto" style={{ background: "rgba(255,255,255,0.05)" }} />
                       </td>
                     )}
+                    <td className="px-5 py-3">
+                      <div className="h-3.5 w-6 rounded ml-auto" style={{ background: "rgba(255,255,255,0.05)" }} />
+                    </td>
                   </tr>
                 ))
               ) : error ? (
                 <tr>
-                  <td colSpan={showGpu ? 6 : 5} className="px-5 py-8 text-center text-xs" style={{ color: "var(--tertiary-1)" }}>
+                  <td colSpan={showGpu ? 7 : 6} className="px-5 py-8 text-center text-xs" style={{ color: "var(--tertiary-1)" }}>
                     Failed to load processes: {error}
                   </td>
                 </tr>
-              ) : data?.processes.length === 0 ? (
+              ) : filteredProcesses.length === 0 ? (
                 <tr>
-                  <td colSpan={showGpu ? 6 : 5} className="px-5 py-8 text-center text-xs text-white/25">
+                  <td colSpan={showGpu ? 7 : 6} className="px-5 py-8 text-center text-xs text-white/25">
                     No processes found
                   </td>
                 </tr>
               ) : (
-                data?.processes.map((proc) => (
+                filteredProcesses.map((proc) => (
                   <tr
                     key={proc.pid}
                     className="border-b transition-colors duration-100"
@@ -192,6 +240,16 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ className }) => {
                         )}
                       </td>
                     )}
+                    <td className="px-5 py-2.5 text-right">
+                      <button
+                        onClick={() => handleKill(proc.pid, proc.name)}
+                        disabled={killingPid === proc.pid}
+                        title={`Terminate ${proc.name}`}
+                        className="p-1.5 rounded hover:bg-[var(--tertiary-1)]/15 text-white/20 hover:text-[var(--tertiary-1)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <X size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}

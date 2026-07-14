@@ -1,5 +1,6 @@
 export interface CPUStats {
   percent: number;
+  per_core_percent: number[];
   count: number;
   freq_mhz: number;
   freq_max_mhz: number;
@@ -42,12 +43,20 @@ export interface ProcessStats {
   num_fds: number;
 }
 
+export interface SystemInfoStats {
+  boot_time: number;
+  uptime_seconds: number;
+  battery_percent: number | null;
+  battery_plugged: boolean | null;
+}
+
 export interface SystemStats {
   cpu: CPUStats;
   ram: RAMStats;
   disk: DiskStats;
   gpus: GPUStats[];
   process: ProcessStats;
+  system: SystemInfoStats;
   timestamp: number;
 }
 
