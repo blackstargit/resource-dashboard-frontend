@@ -13,6 +13,7 @@ import {
   AlertCircle,
   BatteryFull,
   BatteryCharging,
+  Terminal,
 } from "lucide-react";
 import {
   AreaChart,
@@ -227,12 +228,13 @@ function App() {
             color="secondary"
           />
           <StatCard
-            title="GPU Cluster"
-            value={stats.gpus.length}
-            subtitle="Active Units"
-            icon={Server}
+            title="Backend Process"
+            value={`${stats.process.memory_mb.toFixed(0)} MB`}
+            subtitle={`${stats.process.num_threads} Threads`}
+            icon={Terminal}
+            percent={stats.process.memory_percent}
             color="tertiary-2"
-            trend={`${stats.gpus.reduce((acc, g) => acc + g.load_percent, 0) / stats.gpus.length < 50 ? "Optimal" : "High Load"}`}
+            trend={`CPU Load: ${stats.process.cpu_percent.toFixed(1)}%`}
           />
           <StatCard
             title="Disk I/O"
@@ -244,14 +246,9 @@ function App() {
           />
         </div>
 
-        {/* Per-Core CPU Load */}
-        <div className="col-span-12 mb-8">
-          <CoreGrid cores={stats.cpu.per_core_percent} />
-        </div>
-
         {/* GPU Grid Section */}
         <div className="col-span-12 lg:col-span-8 space-y-4">
-          <div className="glass-panel p-4 rounded-xl flex items-center justify-between bg-black/20 border-white/5">
+          <div className="glass-panel p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-black/20 border-white/5">
             <h2 className="text-lg font-bold flex items-center gap-3">
               <div className="p-1.5 rounded bg-[var(--primary)]/10">
                 <Zap size={16} className="text-[var(--primary)]" />
@@ -260,9 +257,26 @@ function App() {
                 GPU Allocation Matrix
               </span>
             </h2>
-            <span className="text-[10px] text-gray-400 font-mono uppercase tracking-widest border border-white/10 px-3 py-1.5 rounded-full bg-white/5">
-              {stats.gpus.length} Devices Detected
-            </span>
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Active Units Small Card */}
+              <div className="glass-panel px-3 py-1.5 rounded-lg flex items-center gap-2 border-[var(--tertiary-2)]/20 bg-black/30">
+                <Server size={12} className="text-[var(--tertiary-2)]" />
+                <span className="text-[10px] text-gray-400 font-mono uppercase tracking-wider">Active Units:</span>
+                <span className="text-xs font-mono font-bold text-[var(--tertiary-2)]">{stats.gpus.length}</span>
+              </div>
+              {/* Status Small Card */}
+              <div className="glass-panel px-3 py-1.5 rounded-lg flex items-center gap-2 border-[var(--tertiary-2)]/20 bg-black/30">
+                <Activity size={12} className={stats.gpus.reduce((acc, g) => acc + g.load_percent, 0) / stats.gpus.length < 50 ? "text-[var(--tertiary-2)]" : "text-[var(--tertiary-1)] animate-pulse"} />
+                <span className="text-[10px] text-gray-400 font-mono uppercase tracking-wider">Status:</span>
+                <span className={`text-xs font-mono font-bold ${
+                  stats.gpus.reduce((acc, g) => acc + g.load_percent, 0) / stats.gpus.length < 50
+                    ? "text-[var(--tertiary-2)]"
+                    : "text-[var(--tertiary-1)]"
+                }`}>
+                  {stats.gpus.reduce((acc, g) => acc + g.load_percent, 0) / stats.gpus.length < 50 ? "Optimal" : "High Load"}
+                </span>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
@@ -274,7 +288,7 @@ function App() {
 
         {/* Side Charts / Process Info */}
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          <div className="glass-card p-6 flex-1 min-h-[300px] shadow-[0_4px_20px_rgba(0,0,0,0.4)]">
+          <div className="glass-card p-6 flex-1 min-h-[300px] shadow-[0_4px_20px_rgba(0,0,0,0.4)] flex flex-col justify-between">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xs uppercase text-gray-400 font-bold tracking-widest flex items-center gap-2">
                 <Activity size={14} />
@@ -285,7 +299,7 @@ function App() {
               </span>
             </div>
 
-            <div className="h-[250px] w-full relative">
+            <div className="flex-1 w-full min-h-[250px] relative">
               {/* Chart Grid Lines Overlay */}
               <div
                 className="absolute inset-0 pointer-events-none opacity-10"
@@ -392,34 +406,11 @@ function App() {
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Process Stats Mini Card */}
-          <div className="glass-card p-5 border-l-2 border-l-[var(--tertiary-2)]">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xs uppercase text-gray-400 font-bold tracking-widest">
-                Backend Process
-              </h3>
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--tertiary-2)] animate-pulse"></span>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="bg-white/5 p-3 rounded-lg border border-white/5 group hover:border-white/10 transition-colors">
-                <div className="text-gray-500 text-[10px] uppercase mb-1">
-                  Threads
-                </div>
-                <div className="font-mono font-bold text-xl text-[var(--text-main)] group-hover:text-[var(--tertiary-2)] transition-colors">
-                  {stats.process.num_threads}
-                </div>
-              </div>
-              <div className="bg-white/5 p-3 rounded-lg border border-white/5 group hover:border-white/10 transition-colors">
-                <div className="text-gray-500 text-[10px] uppercase mb-1">
-                  Mem (RSS)
-                </div>
-                <div className="font-mono font-bold text-xl text-[var(--text-main)] group-hover:text-[var(--secondary)] transition-colors">
-                  {stats.process.memory_mb.toFixed(0)} MB
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Per-Core CPU Load */}
+        <div className="col-span-12 mb-8">
+          <CoreGrid cores={stats.cpu.per_core_percent} />
         </div>
 
         {/* Top Processes Section */}
