@@ -408,7 +408,7 @@ function App() {
         </div>
 
         {/* Per-Core CPU Load */}
-        <div className="col-span-12 mb-8">
+        <div className="col-span-12 mb-8 mt-8">
           <CoreGrid cores={stats.cpu.per_core_percent} />
         </div>
 
