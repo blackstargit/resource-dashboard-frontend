@@ -232,9 +232,8 @@ function App() {
             value={`${stats.process.memory_mb.toFixed(0)} MB`}
             subtitle={`${stats.process.num_threads} Threads`}
             icon={Terminal}
-            percent={stats.process.memory_percent}
+            percent={Math.min(100, (stats.process.num_threads / 100) * 100)}
             color="tertiary-2"
-            trend={`CPU Load: ${stats.process.cpu_percent.toFixed(1)}%`}
           />
           <StatCard
             title="Disk I/O"
