@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { List, Search, X } from "lucide-react";
 import { useProcessList } from "../hooks/useProcessList";
+import { useGetMeQuery } from "../store/api";
 import { cpuColor } from "../lib/colors";
 import type { ProcessSortKey } from "../types";
 
@@ -33,6 +34,9 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ className }) => {
   const [killingPid, setKillingPid] = useState<number | null>(null);
   const [killError, setKillError] = useState<string | null>(null);
   const { data, isLoading, error, killProcess } = useProcessList(sortBy, 25, 2000);
+  // Server-side flag: terminating host processes is opt-in (ALLOW_PROCESS_KILL).
+  const { data: me } = useGetMeQuery();
+  const canKill = me?.allow_process_kill === true;
 
   const showGpu = data?.gpu_available === true;
 
@@ -145,12 +149,14 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ className }) => {
                     GPU Mem
                   </th>
                 )}
-                <th className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-right w-16 text-white/25">
-                  Kill
-                </th>
+                {canKill && (
+                  <th className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-right w-16 text-white/25">
+                    Kill
+                  </th>
+                )}
               </tr>
               <tr>
-                <td colSpan={showGpu ? 7 : 6} className="p-0">
+                <td colSpan={5 + (showGpu ? 1 : 0) + (canKill ? 1 : 0)} className="p-0">
                   <div className="h-px w-full" style={{ background: "rgba(255,255,255,0.06)" }} />
                 </td>
               </tr>
@@ -186,13 +192,13 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ className }) => {
                 ))
               ) : error ? (
                 <tr>
-                  <td colSpan={showGpu ? 7 : 6} className="px-5 py-8 text-center text-xs" style={{ color: "var(--tertiary-1)" }}>
+                  <td colSpan={5 + (showGpu ? 1 : 0) + (canKill ? 1 : 0)} className="px-5 py-8 text-center text-xs" style={{ color: "var(--tertiary-1)" }}>
                     Failed to load processes: {error}
                   </td>
                 </tr>
               ) : filteredProcesses.length === 0 ? (
                 <tr>
-                  <td colSpan={showGpu ? 7 : 6} className="px-5 py-8 text-center text-xs text-white/25">
+                  <td colSpan={5 + (showGpu ? 1 : 0) + (canKill ? 1 : 0)} className="px-5 py-8 text-center text-xs text-white/25">
                     No processes found
                   </td>
                 </tr>
@@ -240,16 +246,18 @@ export const ProcessTable: React.FC<ProcessTableProps> = ({ className }) => {
                         )}
                       </td>
                     )}
-                    <td className="px-5 py-2.5 text-right">
-                      <button
-                        onClick={() => handleKill(proc.pid, proc.name)}
-                        disabled={killingPid === proc.pid}
-                        title={`Terminate ${proc.name}`}
-                        className="p-1.5 rounded hover:bg-[var(--tertiary-1)]/15 text-white/20 hover:text-[var(--tertiary-1)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        <X size={14} />
-                      </button>
-                    </td>
+                    {canKill && (
+                      <td className="px-5 py-2.5 text-right">
+                        <button
+                          onClick={() => handleKill(proc.pid, proc.name)}
+                          disabled={killingPid === proc.pid}
+                          title={`Terminate ${proc.name}`}
+                          className="p-1.5 rounded hover:bg-[var(--tertiary-1)]/15 text-white/20 hover:text-[var(--tertiary-1)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <X size={14} />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

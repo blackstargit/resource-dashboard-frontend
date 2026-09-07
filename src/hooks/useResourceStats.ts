@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import type { SystemStats } from "../types";
+import { API_BASE } from "../store/api";
+import { authQuery, loadSession } from "../lib/authCrypto";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:8202/api/v1/resources/stats/stream";
+const STREAM_PATH = `${API_BASE}/resources/stats/stream`;
 
 export function useResourceStats(historyLength = 60) {
   const [stats, setStats] = useState<SystemStats | null>(null);
@@ -20,8 +20,16 @@ export function useResourceStats(historyLength = 60) {
     let retryTimeout: number | undefined;
 
     const connect = () => {
+      const session = loadSession();
+      if (!session) return;
+
       try {
-        eventSource = new EventSource(API_URL);
+        // EventSource cannot set headers, so the same signature travels as
+        // query parameters. It is re-signed on every (re)connect because each
+        // one is single-use and expires within seconds.
+        eventSource = new EventSource(
+          `${STREAM_PATH}?${authQuery(session, STREAM_PATH)}`,
+        );
 
         eventSource.onopen = () => {
           setIsConnected(true);

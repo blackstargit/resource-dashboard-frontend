@@ -1,4 +1,7 @@
+import { useEffect } from "react";
 import { useResourceStats } from "./hooks/useResourceStats";
+import { Login } from "./components/Login";
+import { useGetMeQuery, useLogoutMutation } from "./store/api";
 import { StatCard } from "./components/StatCard";
 import { GPUCard } from "./components/GPUCard";
 import { ProcessTable } from "./components/ProcessTable";
@@ -14,6 +17,7 @@ import {
   BatteryFull,
   BatteryCharging,
   Terminal,
+  LogOut,
 } from "lucide-react";
 import {
   AreaChart,
@@ -55,8 +59,16 @@ const BackgroundGrid = () => (
   />
 );
 
-function App() {
+function Dashboard() {
   const { stats, history, isConnected, error } = useResourceStats();
+  const { refetch } = useGetMeQuery();
+  const [logout] = useLogoutMutation();
+
+  // A dropped stream is also how an expired session shows up (EventSource
+  // hides the 401), so re-check the session and fall back to the login form.
+  useEffect(() => {
+    if (!isConnected) refetch();
+  }, [isConnected, refetch]);
 
   if (error) {
     return (
@@ -204,6 +216,14 @@ function App() {
                 {new Date(stats.timestamp * 1000).toLocaleTimeString()}
               </span>
             </div>
+
+            <button
+              onClick={() => logout()}
+              title="Sign out"
+              className="pl-6 border-l border-white/10 text-gray-400 hover:text-[var(--tertiary-1)] transition-colors"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </header>
@@ -419,6 +439,14 @@ function App() {
       </main>
     </div>
   );
+}
+
+function App() {
+  const { isLoading, isError } = useGetMeQuery();
+
+  if (isLoading) return <div className="min-h-screen bg-[var(--bg-dark)]" />;
+  if (isError) return <Login />;
+  return <Dashboard />;
 }
 
 export default App;
