@@ -1,6 +1,7 @@
-export function cpuColor(pct: number): string {
-  if (pct > 85) return "var(--tertiary-1)";
-  if (pct > 60) return "var(--secondary)";
-  if (pct > 20) return "var(--primary)";
-  return "rgba(255,255,255,0.35)";
+// Semantic load color: utilization 0-100 → a color that MEANS something.
+// Below 70% reads as the neutral accent, 70-90% warns, 90%+ is critical.
+export function levelColor(pct: number): string {
+  if (pct >= 90) return "var(--crit)";
+  if (pct >= 70) return "var(--warn)";
+  return "var(--accent)";
 }

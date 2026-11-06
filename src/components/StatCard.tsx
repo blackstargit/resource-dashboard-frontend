@@ -1,14 +1,14 @@
 import React from "react";
 import type { LucideIcon } from "lucide-react";
+import { levelColor } from "../lib/colors";
 
 interface StatCardProps {
   title: string;
   value: string | number;
   subtitle?: string;
   icon: LucideIcon;
-  percent?: number; // 0-100
-  color?: "primary" | "secondary" | "tertiary-1" | "tertiary-2";
-  trend?: string;
+  /** 0-100; drives the bar and its semantic color */
+  percent?: number;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -17,64 +17,43 @@ export const StatCard: React.FC<StatCardProps> = ({
   subtitle,
   icon: Icon,
   percent,
-  color = "primary",
-  trend,
 }) => {
-  const getColorVar = () => `var(--${color})`;
+  const color = percent !== undefined ? levelColor(percent) : "var(--accent)";
 
   return (
-    <div className="glass-card p-8 flex flex-col justify-between h-full relative group">
-      {/* Background Glow Effect */}
-      <div
-        className="absolute top-0 right-0 w-32 h-32 opacity-10 rounded-full blur-2xl transition-opacity group-hover:opacity-20 pointer-events-none"
-        style={{ background: getColorVar() }}
-      />
-
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h3 className="text-base font-medium text-gray-400 uppercase tracking-widest">
-            {title}
-          </h3>
-          <div className="mt-4 flex items-baseline gap-3">
-            <span className="text-4xl font-bold font-mono tracking-tight text-shadow-glow">
-              {value}
-            </span>
-            {subtitle && (
-              <span className="text-sm font-medium text-gray-500">
-                {subtitle}
-              </span>
-            )}
-          </div>
-        </div>
-        <div
-          className="p-4 rounded-2xl bg-opacity-10 backdrop-blur-md border border-white/5 shadow-inner"
-          style={{ backgroundColor: `${getColorVar()}15` }} // 15 = hex opacity ~8%
-        >
-          <Icon size={28} style={{ color: getColorVar() }} />
-        </div>
+    <div className="card card-hover p-5 flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-[var(--text-muted)]">
+          {title}
+        </span>
+        <Icon size={18} className="text-[var(--text-faint)]" />
       </div>
 
-      <div className="space-y-3">
-        {percent !== undefined && (
-          <div className="w-full bg-gray-800/50 rounded-full h-3 overflow-hidden border border-white/5">
+      <div className="flex items-baseline gap-2">
+        <span className="mono text-3xl font-semibold tracking-tight">
+          {value}
+        </span>
+        {subtitle && (
+          <span className="text-sm text-[var(--text-faint)]">{subtitle}</span>
+        )}
+      </div>
+
+      {percent !== undefined && (
+        <div className="flex items-center gap-3">
+          <div className="bar-track h-1.5 flex-1">
             <div
-              className="h-full rounded-full transition-all duration-500 ease-out relative"
+              className="bar-fill"
               style={{
                 width: `${Math.min(100, Math.max(0, percent))}%`,
-                background: getColorVar(),
+                background: color,
               }}
-            >
-              <div className="absolute right-0 top-0 bottom-0 w-2 bg-white/50 blur-[2px]" />
-            </div>
+            />
           </div>
-        )}
-
-        {trend && (
-          <p className="text-xs text-right mt-2 font-mono opacity-70 tracking-wide">
-            {trend}
-          </p>
-        )}
-      </div>
+          <span className="mono text-xs text-[var(--text-faint)] w-9 text-right">
+            {Math.round(percent)}%
+          </span>
+        </div>
+      )}
     </div>
   );
 };
