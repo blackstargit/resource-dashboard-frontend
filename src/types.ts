@@ -53,8 +53,8 @@ export interface DiskInfo {
 }
 
 export interface NetworkStats {
-  rx_mb_s?: number;
-  tx_mb_s?: number;
+  rx_bytes_s?: number;
+  tx_bytes_s?: number;
   rx_total_gb?: number;
   tx_total_gb?: number;
   error?: string;

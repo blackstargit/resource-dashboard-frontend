@@ -2,7 +2,7 @@ import React from "react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import type { SystemStats } from "../types";
 import { Bar } from "./Bar";
-import { formatUptime, fmtSize } from "../lib/format";
+import { formatUptime, fmtSize, fmtRate } from "../lib/format";
 
 const Card: React.FC<{ title: string; children: React.ReactNode }> = ({
   title,
@@ -59,24 +59,20 @@ export const NetworkCard: React.FC<{ net: SystemStats["network"] }> = ({
     ) : (
       <>
         <div className="flex gap-4">
-          <div className="flex flex-col gap-0.5">
-            <span className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
-              <ArrowDown size={11} className="text-[var(--ok)]" /> Down
-            </span>
-            <span className="mono text-lg font-semibold">
-              {(net.rx_mb_s ?? 0).toFixed(1)}
-              <span className="text-xs text-[var(--text-faint)]"> MB/s</span>
-            </span>
-          </div>
-          <div className="flex flex-col gap-0.5">
-            <span className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
-              <ArrowUp size={11} className="text-[var(--accent)]" /> Up
-            </span>
-            <span className="mono text-lg font-semibold">
-              {(net.tx_mb_s ?? 0).toFixed(1)}
-              <span className="text-xs text-[var(--text-faint)]"> MB/s</span>
-            </span>
-          </div>
+          {([
+            { dir: "Down", icon: ArrowDown, color: "var(--ok)", r: fmtRate(net.rx_bytes_s ?? 0) },
+            { dir: "Up", icon: ArrowUp, color: "var(--accent)", r: fmtRate(net.tx_bytes_s ?? 0) },
+          ] as const).map(({ dir, icon: Icon, color, r }) => (
+            <div key={dir} className="flex flex-col gap-0.5">
+              <span className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-[var(--text-faint)]">
+                <Icon size={11} style={{ color }} /> {dir}
+              </span>
+              <span className="mono text-lg font-semibold">
+                {r.value}
+                <span className="text-xs text-[var(--text-faint)]"> {r.unit}</span>
+              </span>
+            </div>
+          ))}
         </div>
         <div className="flex justify-between text-[11px] text-[var(--text-faint)] pt-2 border-t border-[var(--border)]">
           <span className="mono">↓ {(net.rx_total_gb ?? 0).toFixed(1)} GB total</span>

@@ -13,3 +13,12 @@ export function fmtSize(gb: number): string {
   if (gb < 10) return `${gb.toFixed(1)} GB`;
   return `${Math.round(gb)} GB`;
 }
+
+/** bytes/sec → adaptive {value, unit} so KB/s traffic stays visible. */
+export function fmtRate(bps: number): { value: string; unit: string } {
+  if (!bps || bps < 1) return { value: "0", unit: "B/s" };
+  if (bps < 1024) return { value: String(Math.round(bps)), unit: "B/s" };
+  if (bps < 1024 ** 2) return { value: (bps / 1024).toFixed(1), unit: "KB/s" };
+  if (bps < 1024 ** 3) return { value: (bps / 1024 ** 2).toFixed(2), unit: "MB/s" };
+  return { value: (bps / 1024 ** 3).toFixed(2), unit: "GB/s" };
+}
