@@ -2,8 +2,10 @@ export interface CPUStats {
   percent: number;
   per_core_percent: number[];
   count: number;
-  freq_mhz: number;
-  freq_max_mhz: number;
+  freq_mhz: number | null;
+  freq_max_mhz: number | null;
+  load_avg: number[] | null;
+  temp_celsius: number | null;
 }
 
 export interface RAMStats {
@@ -33,6 +35,29 @@ export interface GPUStats {
   memory_total_gb: number;
   memory_percent: number;
   temp_celsius: number;
+  power_w?: number | null;
+  power_limit_w?: number | null;
+  clock_sm_mhz?: number | null;
+  clock_mem_mhz?: number | null;
+  fan_percent?: number | null;
+}
+
+export interface DiskInfo {
+  mount: string;
+  device: string;
+  fstype: string;
+  total_gb: number;
+  used_gb: number;
+  free_gb: number;
+  percent: number;
+}
+
+export interface NetworkStats {
+  rx_mb_s?: number;
+  tx_mb_s?: number;
+  rx_total_gb?: number;
+  tx_total_gb?: number;
+  error?: string;
 }
 
 export interface ProcessStats {
@@ -44,6 +69,10 @@ export interface ProcessStats {
 }
 
 export interface SystemInfoStats {
+  hostname: string;
+  os: string;
+  kernel: string;
+  cpu_model: string | null;
   boot_time: number;
   uptime_seconds: number;
   battery_percent: number | null;
@@ -54,7 +83,9 @@ export interface SystemStats {
   cpu: CPUStats;
   ram: RAMStats;
   disk: DiskStats;
+  disks: DiskInfo[];
   gpus: GPUStats[];
+  network: NetworkStats;
   process: ProcessStats;
   system: SystemInfoStats;
   timestamp: number;
